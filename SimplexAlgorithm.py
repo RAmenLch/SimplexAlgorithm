@@ -13,22 +13,22 @@ class QTable():
         for i in range(rows):
             cB[i,:] = self.cT.T[int(self.xB[i,:]),:]
         return cB
-    def get_z(self):
-        _z = self.cT - self.getcB().T*self.A
-        return _z
+    def getsigma(self):
+        sigma = self.cT - self.getcB().T*self.A
+        return sigma
     def __str__(self):
         return 'cT:\n'+ str(self.cT)\
                 +'\nA:\n' + str(self.A)\
                 +'\nb:\n' + str(self.b)\
                 +'\nxB:\n'+ str(self.xB+ 1) \
                 +'\ncB:\n' + str(self.getcB())\
-                +'\n-z:\n' + str(self.get_z())
+                +'\nsigma:\n' + str(self.getsigma())
 
 
 
 
 
-
+#xB改变后,A的变换
 def AConv(qt,X,Y):
     A_X_Y = qt.A[X,Y]
     qt.A[X,:] = qt.A[X,:]/A_X_Y
@@ -44,17 +44,16 @@ def AConv(qt,X,Y):
 
 
 def tableMethod(qt):
-    #qt = tableMethod_Step(qt)
-    #print(qt)
-
-
-    #zero = np.zeros(qt.get_z().shape)
-    while  np.max(qt.get_z()) > 0 :
+    print(qt)
+    print('------------------------')
+    #zero = np.zeros(qt.getsigma().shape)
+    while  np.max(qt.getsigma()) > 0 :
         qt = tableMethod_Step(qt)
         print(qt)
-        print('')
+        print('------------------------')
     #print(qt)
 
+#求向量vt[A的某一列]倒数
 def reciprocal(vt):
     MAXNUM = 2**12
     flag = False
@@ -72,10 +71,10 @@ def reciprocal(vt):
 def tableMethod_Step(qt):
     cB = qt.getcB()
     #print('cB:\n',cB)
-    _z = qt.get_z()
-    #print('_z:\n',_z)
+    sigma = qt.getsigma()
+    #print('sigma:\n',sigma)
     #-z最大的x的数组下标
-    maxx = np.argmax(_z)
+    maxx = np.argmax(sigma)
     #print('maxx:\n',maxx)
     #-z最大的那一列的倒数
     Amaxx_reciprocal =  reciprocal(qt.A[:,maxx])
@@ -109,11 +108,11 @@ if __name__ == '__main__':
 
 
     qt_1 = QTable(cT1,A,b,xB)
-    print('_z:' , qt_1.get_z(), '\n' )
+    print('sigma:' , qt_1.getsigma(), '\n' )
     tableMethod(qt_1)
     print('------------------------------------')
     qt_2 = QTable(cT2,qt_1.A[:,:-1],qt_1.b,qt_1.xB)
-    print('_z:' , qt_2.get_z(), '\n' )
+    print('sigma:' , qt_2.getsigma(), '\n' )
     tableMethod(qt_2)
 
 
