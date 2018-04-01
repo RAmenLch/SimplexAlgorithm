@@ -1,9 +1,15 @@
 import numpy as np
 from SimplexAlgorithm import QTable
 from SimplexAlgorithm import AConv
+'''
+对偶单纯形:
+要求,检验数必须非正(对偶问题有可行解)!原规划基本解可以有小于0的分量,直到最优解b全部非负时结束迭代!
+'''
+
+
 
 #求sigma与vt的倒数的非向量乘法(其中若sigma,vt有0值或vt有正值,结果为MAXNUM)
-def dual_Sigma_MUL_vtReciprocal(sigma,vt):
+def _dual_Sigma_MUL_vtReciprocal(sigma,vt):
     MAXNUM = 2*16
     MINDECI = 10**-6
     if np.min(vt) >= 0:
@@ -22,19 +28,20 @@ def dual_Sigma_MUL_vtReciprocal(sigma,vt):
 #对偶单纯形的每一次迭代
 def dualTableMethod_Step(qt):
     minx = np.argmin(qt.b)
-    xi = np.argmin(dual_Sigma_MUL_vtReciprocal(qt.getsigma(),qt.A[minx,:]))
+    xi = np.argmin(_dual_Sigma_MUL_vtReciprocal(qt.getsigma(),qt.A[minx,:]))
     print('退出者:xb第',minx+1,'行,换入者:x'+str(xi+1))
     qt.xB[minx] = xi
     Y = xi
     X = minx
     qt = AConv(qt,X,Y)
     return qt
-
+#对偶单纯形法
 def dualTableMethod(qt):
     print(qt)
     print('--------------------')
+    #由于没有写异常处理,所以发生异常会疯狂循环,限制下循环次数
     c = 0
-    while  np.min(qt.b) < 0 and c<5:
+    while  np.min(qt.b) < 0 and c<10:
         qt = dualTableMethod_Step(qt)
         print(qt)
         print('--------------------')

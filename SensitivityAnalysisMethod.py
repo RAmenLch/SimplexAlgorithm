@@ -6,6 +6,10 @@ from DualSimplexMethod import *
 
 异常懒得写,全都是print,略略略
 
+未解决的问题:
+    非基变量参数ck修改导致最优解改变
+    新增一个变量xn+1,cn+1为目标函数系数,p为约束向量,导致最优解改变
+
 '''
 
 
@@ -19,7 +23,7 @@ def _deltacNonbasicVar(qt,k):
 
 #修改非基变量参数ck
 #k为x的下标[数学下标]
-#返回deltac的上界
+#返回deltac使最优解不变的上界
 def deltacNonbasicVar(qt,k):
     k = k -1
     return _deltacNonbasicVar(qt,k)
@@ -28,6 +32,7 @@ def deltacNonbasicVar(qt,k):
 
 #修改基变量参数cl
 #l为xB的行数[计算机下标]
+#返回deltac使最优解不变的区间
 def _deltacBasicVar(qt,l):
     #max = max{sigmaj/a`lj|a`lj>0}
     #min = min{sigmaj/a`lj|a`lj<0}
@@ -46,12 +51,15 @@ def _deltacBasicVar(qt,l):
 
 #修改基变量参数cl
 #l为xB的行数[数学下标]
+#返回deltac使最优解不变的区间
 def deltacBasicVar(qt,l):
     l = l - 1
     return _deltacBasicVar(qt,l)
 
 #修改右端参数br
 #r为b的下标[计算机下标]
+#B为原最优解在原问题A下的矩阵
+#返回deltab使最优解不变的区间
 def _deltab(qt,r,B):
     #max = max{-b`i/betair|betair>0}
     #min = min{-b`i/betair|betair<0}
@@ -70,13 +78,15 @@ def _deltab(qt,r,B):
 
 #修改右端参数br
 #r为b的下标[数学下标]
+#B为原最优解在原问题A下的矩阵
+#返回deltab使最优解不变的区间
 def deltab(qt,r,B):
     r = r - 1
     return _deltab(qt,r,B)
 
 
 #修改约束条件A系数aij,不可以是基变量的系数
-#ij为a的计算机下标
+#i,j为a的计算机下标
 def _deltaa(qt,i,j):
     if j in qt.xB:
         print('花Q花Q')
@@ -92,35 +102,40 @@ def _deltaa(qt,i,j):
         print('?????????????yi为0????????????????')
 
 #修改约束条件A系数aij,不可以是基变量的系数
-#ij为a的数学下标
+#i,j为a的数学下标
 def deltaa(qt,i,j):
     i -= 1
     j -= 1
     return _deltaa(qt,i,j)
 
 
-#添加一个变量,限制条件向量为p,求c的最大值
+#添加一个变量xn+1,限制条件向量为p,求cn+1的上界
 def addxcLessThan(qt,B,p):
     cLessThan = qt.getcB().T * B.I * p
     return float(cLessThan)
 
 
 
-
+#当deltab能改变最优解时,qt为原最优解表格,r为更改的br下标,dbr为deltabr,B为原最优解在原问题A下的矩阵(原最优可行基)
 def db_dualtable(qt,r,dbr,B):
     r = r - 1
     db = np.zeros(qt.b.shape)
     db[r,:] = dbr
+    #修改原问题br只有使表格的b发生改变
     newb = qt.b + B.I * db
+    #深拷贝防止迭代改变原QTable
     newqt = QTable(qt.cT.copy(),qt.A.copy(),newb,qt.xB.copy()+1)
-    #print(newqt)
+    #打印出新表的迭代过程
     dualTableMethod(newqt)
 
-
-def dcl_dualtable(qt,cT):
-    qt.cT = cT
+#cl指基变量的参数,本函数只解决基变量参数改变导致最优解改变的问题
+#revisedcT表示改变后的cT
+#这个函数八成有bug,因为只考虑了dcl_setp()只运行一次的情况,并不知道是否应是如此
+def dcl_dualtable(qt,revisedcT):
+    qt.cT = revisedcT
     print(qt)
     print('--------------------')
+    #cl改变会导致n-m个检验数(sigma)发生改变,此时需要将其中大于0的检验数对应变量为进基变量
     qt = dcl_setp(qt)
     print(qt)
     print('--------------------')
@@ -129,6 +144,7 @@ def dcl_dualtable(qt,cT):
         print(qt)
         print('--------------------')
 
+#将其中大于0的检验数对应变量为进基变量
 def dcl_setp(qt):
     minx = np.argmin(qt.b)
     xi = np.argmax(qt.getsigma())
@@ -139,6 +155,11 @@ def dcl_setp(qt):
     print('Y',Y,'X',X)
     qt = AConv(qt,X,Y)
     return qt
+
+#qt为原最优解表格
+#Anj为新增约束
+#bn为新增右端常数
+#新增一个约束,在qt的基础上重新计算
 def addA_dualtabe(qt,Anj,bn):
     newA1 = np.hstack((qt.A,np.zeros((qt.A.shape[0],1))))
     newA = np.vstack((newA1,Anj))
