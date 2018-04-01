@@ -2,12 +2,12 @@ import numpy as np
 from SimplexAlgorithm import QTable
 from SimplexAlgorithm import AConv
 
-#求sigma与vt的倒数的非向量乘法(其中若有sigma,vt有0值或vt有正值,结果为MAXNUM)
+#求sigma与vt的倒数的非向量乘法(其中若sigma,vt有0值或vt有正值,结果为MAXNUM)
 def dual_Sigma_MUL_vtReciprocal(sigma,vt):
     MAXNUM = 2*16
     MINDECI = 10**-6
     if np.min(vt) >= 0:
-        print('!!!!!!!!!!!!!!!!!!!!!!!某改!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        print(vt,'!!!!!!!!!!!!!!!!!!!!!!!某改!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     elif np.max(sigma) > 0:
         print('验证数为正不应该使用对偶单纯形')
     else:
@@ -33,23 +33,42 @@ def dualTableMethod_Step(qt):
 def dualTableMethod(qt):
     print(qt)
     print('--------------------')
-    while  np.min(qt.b) < 0 :
+    c = 0
+    while  np.min(qt.b) < 0 and c<5:
         qt = dualTableMethod_Step(qt)
         print(qt)
         print('--------------------')
+        c+=1
 
 
 
 
 if __name__ == '__main__':
-    cT = np.mat([-2.,-3.,-4.,0.,0.])
+    cT = np.mat([-1.,-2,-3,0,0,0])
 
-    A = np.mat([[-1.,-2.,-1.,1.,0.]
-               ,[-2.,1.,-3.,0.,1.]])
-    b = np.mat([[-3.]
-               ,[-4.]])
-    xB = np.mat([[3]
-                ,[4]])
+    A = np.mat([[-2.,1,-1,1,0,0]
+               ,[1,1,2,0,1,0]
+               ,[0,1,-1,0,0,1]])
+    b = np.mat([[-4.]
+               ,[8]
+               ,[2]])
+    xB = np.mat([[4]
+                ,[5]
+                ,[6]])
 
     qt = QTable(cT,A,b,xB)
     dualTableMethod(qt)
+
+
+
+
+'''
+
+cT = np.mat([-5.,5,8,0,0])
+xB = np.mat([[2]
+            ,[5]])
+b = np.mat([[20.]
+           ,[10]])
+A = np.mat([[-1.,1,3,1,0]
+          ,[16,0,-2,-4,1]])
+'''

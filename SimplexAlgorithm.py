@@ -5,7 +5,7 @@ class QTable():
         self.cT = cT
         self.A = A
         self.b = b
-        self.xB = xB
+        self.xB = xB-1
     def getcB(self):
         di = self.xB.shape
         cB = np.zeros(di)
@@ -20,15 +20,22 @@ class QTable():
         return 'cT:\n'+ str(self.cT)\
                 +'\nA:\n' + str(self.A)\
                 +'\nb:\n' + str(self.b)\
-                +'\nxB:\n'+ str(self.xB+ 1) \
+                +'\nxB:\n'+ str(self.xB + 1) \
                 +'\ncB:\n' + str(self.getcB())\
                 +'\nsigma:\n' + str(self.getsigma())
+    def copy(self):
+        cT = self.cT.copy()
+        A =self. A.copy()
+        b = self.b.copy()
+        xB = self.xB.copy()
+        return QTable(cT,A,b,xB + 1)
 
 
 
 
 
 #xB改变后,A的变换
+#其中向量A[:,Y],A[X,Y]为1,其他需为0
 def AConv(qt,X,Y):
     A_X_Y = qt.A[X,Y]
     qt.A[X,:] = qt.A[X,:]/A_X_Y
@@ -46,7 +53,7 @@ def AConv(qt,X,Y):
 def tableMethod(qt):
     print(qt)
     print('------------------------')
-    #zero = np.zeros(qt.getsigma().shape)
+
     while  np.max(qt.getsigma()) > 0 :
         qt = tableMethod_Step(qt)
         print(qt)
@@ -83,8 +90,8 @@ def tableMethod_Step(qt):
     xBi = np.argmin(  np.multiply( qt.b,(Amaxx_reciprocal) )  )
     print('xBi:\n',xBi)
     qt.xB[xBi] = maxx
-    X = xBi#3-下标2
-    Y = maxx#2- 下标1
+    X = xBi
+    Y = maxx
     qt = AConv(qt,X,Y)
     return qt
 
@@ -102,9 +109,9 @@ if __name__ == '__main__':
     b = np.mat([[8.]
                ,[2.]
                ,[4.]])
-    xB = np.mat([[3]
-                ,[4]
-                ,[6]])
+    xB = np.mat([[4]
+                ,[5]
+                ,[7]])
 
 
     qt_1 = QTable(cT1,A,b,xB)
@@ -114,18 +121,3 @@ if __name__ == '__main__':
     qt_2 = QTable(cT2,qt_1.A[:,:-1],qt_1.b,qt_1.xB)
     print('sigma:' , qt_2.getsigma(), '\n' )
     tableMethod(qt_2)
-
-
-
-'''
-cT = np.mat([1500.,2500.,0.,0.,0.])
-A = np.mat([[3.,2.,1.,0.,0.]
-           ,[2.,1.,0.,1.,0.]
-           ,[0.,3.,0.,0.,1.]])
-b = np.mat([[65.]
-           ,[40.]
-           ,[75.]])
-xB = np.mat([[2.]
-            ,[3.]
-            ,[4.]])
-'''
