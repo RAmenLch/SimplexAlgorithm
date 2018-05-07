@@ -1,6 +1,15 @@
 import numpy as np
 
 
+def Myprint(mt):
+     STR = str(mt)
+     STR = STR.replace('-16.','  ◎ ')
+     STR = STR.replace('-32.','  Ø ')
+     print(STR)
+
+
+
+
 
 #axis = 0 判断每行的零个数
 #axis = 1 判断每列的零个数
@@ -9,19 +18,15 @@ def getZeroNums(mt,axis):
     zeroN = []
     if axis == 0:
         for i in range(mt.shape[0]):
-            try:
-                sumN = np.sum(mt[i,:]==0.)
-                if sumN == 0:
-                    sumN == MAXNUM
-                zeroN.append(sumN)
-            except Exception as e:
-                print(i)
-                print(mt[i,:])
+             sumN = np.sum(mt[i,:]== 0.)
+             if sumN == 0:
+                  sumN = MAXNUM
+             zeroN.append(sumN)
     elif axis == 1:
         for i in range(mt.shape[1]):
-            sumN = np.sum(mt[:,i]==0)
+            sumN = np.sum(mt[:,i]==0.)
             if sumN == 0:
-                sumN == MAXNUM
+                sumN = MAXNUM
             zeroN.append(sumN)
     else:
         raise ValueError("axis can only be 0 or 1")
@@ -35,7 +40,7 @@ def setMark(mt):
          minzNs1 = min(zNs1)
          for index,zN in enumerate(zNs0):
              if zN == minzNs0:
-                 z = np.where(mt[index,:] == 0.)[1]
+                 z = np.where(mt[index,:] == 0.)[1].tolist()
                  if z:
                      z = int(z[0])
                  else:
@@ -47,9 +52,10 @@ def setMark(mt):
                  z1 = np.where(mt[:,z] == 0.)[0].tolist()
                  for i in z1:
                      mt[i,z] = -32
+
          for index,zN in enumerate(zNs1):
              if zN == minzNs1:
-                 z = np.where(mt[:,index] == 0.)[0]
+                 z = np.where(mt[:,index] == 0.)[0].tolist()
                  if z:
                      z = int(z[0])
                  else:
@@ -61,7 +67,8 @@ def setMark(mt):
                  z1 = np.where(mt[:,index] == 0.)[0].tolist()
                  for i in z1:
                      mt[i,index] = -32
-         if np.sum(mt == 0.) == 0:
+         x = np.sum(mt == 0.)
+         if x == 0:
              break
     return mt
 
@@ -140,16 +147,20 @@ def HM(mt):
         mt[i,:] = mt[i,:] - float(np.min(mt[i,:]))
     for i in range(mt.shape[1]):
         mt[:,i] = mt[:,i] - float(np.min(mt[:,i]))
-    print(mt)
     markMt = mt.copy()
     while 1:
         markMt = setMark(markMt)
-        print(markMt)
+        Myprint(markMt)
         if isOk(markMt):
             break
         else:
             markMt = convert(markMt)
-            print(markMt)
+    ans = np.where(markMt == -16)[1].tolist()    
+    return ans
+
+def reportAns(ans):
+     for index,i in enumerate(ans):
+          print("第%d个任务由%d号负责"%(index+1,i+1))
 
 
 if __name__ == '__main__':
@@ -160,4 +171,14 @@ if __name__ == '__main__':
                 [29.2,26.4,29.4,28.5,31.1],
                 [   0,   0,   0,   0,   0]
                 ])
-    HM(mt)
+    mt1 = np.mat([
+              [34.,46,44,42,48],
+              [50,60,52,42,36],
+              [62,46,76,52,30],
+              [72,48,62,60,42],
+              [68,44,74,62,38]
+              ])
+    ans = HM(mt1)
+    reportAns(ans)
+    
+    
