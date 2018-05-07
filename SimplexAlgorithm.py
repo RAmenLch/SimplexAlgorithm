@@ -29,6 +29,9 @@ class QTable():
         b = self.b.copy()
         xB = self.xB.copy()
         return QTable(cT,A,b,xB + 1)
+    def getMaxf(self):
+        cB = self.getcB()
+        return cB.T*self.b
 
 
 
@@ -62,7 +65,7 @@ def tableMethod(qt):
 
 #求向量vt[A的某一列]倒数
 def reciprocal(vt):
-    MAXNUM = 2**12
+    MAXNUM = 10**16
     flag = False
     re = np.zeros(vt.shape)
     for i in range(vt.shape[0]):
